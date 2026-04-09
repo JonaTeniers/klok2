@@ -1,25 +1,9 @@
 <!DOCTYPE html>
 <html>
-<body id="body" style="background:black;color:lime;text-align:center;margin-top:10%;font-family:monospace;">
+<body id="body" style="background:black;color:#00ff88;text-align:center;margin-top:10%;font-family:monospace;overflow:hidden;">
 
-<div id="timer" style="font-size:120px;">10:00</div>
-
-<div style="margin-top:30px;">
-  <button onclick="start()">START</button>
-  <button onclick="pause()">PAUZE</button>
-  <button onclick="reset()">RESET</button>
-</div>
-
-<div style="margin-top:20px;">
-  <button onclick="addTime(60)">+1 min</button>
-  <button onclick="addTime(300)">+5 min</button>
-  <button onclick="removeTime(10)">❌ FOUT (-10s)</button>
-  <button onclick="removeTime(60)">💣 ALLES OF NIETS (-60s)</button>
-</div>
-
-<p style="font-size:18px;margin-top:20px;">
-A = +1 min | Z = +5 min | F = fout | X = -60 sec 💣 | SPATIE = start/pauze
-</p>
+<div id="timer" style="font-size:140px;">10:00</div>
+<div id="result" style="font-size:80px;margin-top:40px;"></div>
 
 <audio id="alarm">
   <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3">
@@ -31,6 +15,11 @@ let time = startTime;
 let running = false;
 let alarmPlayed = false;
 
+let gameEnded = false;
+let enteringScore = false;
+let inputScore = "";
+let displayScore = 0;
+
 function update() {
   if(time < 0) time = 0;
 
@@ -40,15 +29,13 @@ function update() {
   document.getElementById("timer").innerText =
     m + ":" + s.toString().padStart(2,'0');
 
-  // 🔴 Laatste 10 seconden = knipperen
   if(time <= 10 && time > 0){
     document.body.style.background =
-      (time % 2 === 0) ? "red" : "black";
+      (time % 2 === 0) ? "#220000" : "black";
   } else {
     document.body.style.background = "black";
   }
 
-  // 🔊 Alarm op 0
   if(time === 0 && !alarmPlayed){
     document.getElementById("alarm").play();
     alarmPlayed = true;
@@ -62,37 +49,60 @@ setInterval(() => {
   }
 },1000);
 
-function start(){
-  running = true;
+// 🎭 score animatie
+function animateScore(target){
+  let interval = setInterval(() => {
+    displayScore++;
+    document.getElementById("result").innerText =
+      "€ " + displayScore;
+
+    if(displayScore >= target){
+      clearInterval(interval);
+    }
+  }, 30);
 }
 
-function pause(){
-  running = false;
-}
+// 🎮 toetsen
+window.addEventListener("keydown", function(e){
 
-function reset(){
-  time = startTime;
-  alarmPlayed = false;
-  document.body.style.background = "black";
-  update();
-}
+  // 🛑 STOP spel
+  if(e.key === "Enter" && !gameEnded){
+    running = false;
+    gameEnded = true;
+    enteringScore = true;
 
-function addTime(sec){
-  time += sec;
-  update();
-}
+    document.getElementById("timer").innerText = "STOP";
+    document.getElementById("result").innerText = "Voer bedrag in...";
+    return;
+  }
 
-function removeTime(sec){
-  time -= sec;
-  update();
-}
+  // ⌨️ score ingeven
+  if(enteringScore){
 
-// ⌨️ toetsen
-document.addEventListener("keydown", function(e){
-  if(e.key === "a") addTime(60);
-  if(e.key === "z") addTime(300);
-  if(e.key === "f") removeTime(10);
-  if(e.key === "x") removeTime(60);
+    if(e.key >= "0" && e.key <= "9"){
+      inputScore += e.key;
+      document.getElementById("result").innerText = inputScore;
+    }
+
+    if(e.key === "Backspace"){
+      inputScore = inputScore.slice(0, -1);
+      document.getElementById("result").innerText = inputScore;
+    }
+
+    if(e.key === "Enter"){
+      enteringScore = false;
+      document.getElementById("result").innerText = "";
+      animateScore(parseInt(inputScore || "0"));
+    }
+
+    return;
+  }
+
+  // 🎭 geheime controls
+  if(e.key === "a") time += 60;
+  if(e.key === "z") time += 300;
+  if(e.key === "f") time -= 10;
+  if(e.key === "x") time -= 60;
 
   if(e.code === "Space"){
     running = !running;
