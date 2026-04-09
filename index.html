@@ -1,30 +1,103 @@
 <!DOCTYPE html>
 <html>
-<body style="background:black;color:red;font-size:100px;text-align:center;margin-top:20%;font-family:monospace;">
+<body id="body" style="background:black;color:lime;text-align:center;margin-top:10%;font-family:monospace;">
 
-<div id="timer">10:00</div>
+<div id="timer" style="font-size:120px;">10:00</div>
 
-<button onclick="addTime(60)">+1 min</button>
-<button onclick="addTime(300)">+5 min</button>
+<div style="margin-top:30px;">
+  <button onclick="start()">START</button>
+  <button onclick="pause()">PAUZE</button>
+  <button onclick="reset()">RESET</button>
+</div>
+
+<div style="margin-top:20px;">
+  <button onclick="addTime(60)">+1 min</button>
+  <button onclick="addTime(300)">+5 min</button>
+  <button onclick="removeTime(10)">❌ FOUT (-10s)</button>
+  <button onclick="removeTime(60)">💣 ALLES OF NIETS (-60s)</button>
+</div>
+
+<p style="font-size:18px;margin-top:20px;">
+A = +1 min | Z = +5 min | F = fout | X = -60 sec 💣 | SPATIE = start/pauze
+</p>
+
+<audio id="alarm">
+  <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3">
+</audio>
 
 <script>
-let time = 600;
+let startTime = 600;
+let time = startTime;
+let running = false;
+let alarmPlayed = false;
 
 function update() {
+  if(time < 0) time = 0;
+
   let m = Math.floor(time/60);
-  let s = time%60;
+  let s = time % 60;
+
   document.getElementById("timer").innerText =
     m + ":" + s.toString().padStart(2,'0');
+
+  // 🔴 Laatste 10 seconden = knipperen
+  if(time <= 10 && time > 0){
+    document.body.style.background =
+      (time % 2 === 0) ? "red" : "black";
+  } else {
+    document.body.style.background = "black";
+  }
+
+  // 🔊 Alarm op 0
+  if(time === 0 && !alarmPlayed){
+    document.getElementById("alarm").play();
+    alarmPlayed = true;
+  }
 }
 
 setInterval(() => {
-  if(time>0) time--;
-  update();
+  if(running && time > 0){
+    time--;
+    update();
+  }
 },1000);
+
+function start(){
+  running = true;
+}
+
+function pause(){
+  running = false;
+}
+
+function reset(){
+  time = startTime;
+  alarmPlayed = false;
+  document.body.style.background = "black";
+  update();
+}
 
 function addTime(sec){
   time += sec;
+  update();
 }
+
+function removeTime(sec){
+  time -= sec;
+  update();
+}
+
+// ⌨️ toetsen
+document.addEventListener("keydown", function(e){
+  if(e.key === "a") addTime(60);
+  if(e.key === "z") addTime(300);
+  if(e.key === "f") removeTime(10);
+  if(e.key === "x") removeTime(60);
+
+  if(e.code === "Space"){
+    running = !running;
+  }
+});
 
 update();
 </script>
