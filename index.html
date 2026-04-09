@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<body style="background:black;color:red;font-size:100px;text-align:center;margin-top:20%;font-family:monospace;">
+
+<div id="timer">10:00</div>
+
+<button onclick="addTime(60)">+1 min</button>
+<button onclick="addTime(300)">+5 min</button>
+
+<script>
+let time = 600;
+
+function update() {
+  let m = Math.floor(time/60);
+  let s = time%60;
+  document.getElementById("timer").innerText =
+    m + ":" + s.toString().padStart(2,'0');
+}
+
+setInterval(() => {
+  if(time>0) time--;
+  update();
+},1000);
+
+function addTime(sec){
+  time += sec;
+}
+
+update();
+</script>
+
+</body>
+</html>
