@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<body id="body" style="background:black;color:#00ff88;text-align:center;margin-top:10%;font-family:monospace;overflow:hidden;">
+<body style="background:black;color:#00ff88;text-align:center;margin-top:10%;font-family:monospace;overflow:hidden;">
 
 <div id="timer" style="font-size:140px;">10:00</div>
 <div id="result" style="font-size:80px;margin-top:40px;"></div>
@@ -9,11 +9,17 @@
   <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3">
 </audio>
 
+<audio id="tension">
+  <source src="https://www.soundjay.com/misc/sounds/fail-buzzer-02.mp3">
+</audio>
+
 <script>
 let startTime = 600;
 let time = startTime;
 let running = false;
+
 let alarmPlayed = false;
+let tensionPlayed = false;
 
 let gameEnded = false;
 let enteringScore = false;
@@ -29,13 +35,22 @@ function update() {
   document.getElementById("timer").innerText =
     m + ":" + s.toString().padStart(2,'0');
 
+  // 🔴 laatste 10 sec
   if(time <= 10 && time > 0){
+
     document.body.style.background =
       (time % 2 === 0) ? "#220000" : "black";
+
+    if(!tensionPlayed){
+      document.getElementById("tension").play();
+      tensionPlayed = true;
+    }
+
   } else {
     document.body.style.background = "black";
   }
 
+  // 🔊 alarm op 0
   if(time === 0 && !alarmPlayed){
     document.getElementById("alarm").play();
     alarmPlayed = true;
@@ -49,17 +64,27 @@ setInterval(() => {
   }
 },1000);
 
-// 🎭 score animatie
-function animateScore(target){
-  let interval = setInterval(() => {
-    displayScore++;
-    document.getElementById("result").innerText =
-      "€ " + displayScore;
+// 🎬 dramatische reveal
+function revealScore(target){
 
-    if(displayScore >= target){
-      clearInterval(interval);
-    }
-  }, 30);
+  document.getElementById("timer").innerText = "";
+  document.getElementById("result").innerText = "Jullie verdienden...";
+
+  setTimeout(() => {
+
+    let interval = setInterval(() => {
+      displayScore++;
+
+      document.getElementById("result").innerText =
+        displayScore + " snoepjes 🍬";
+
+      if(displayScore >= target){
+        clearInterval(interval);
+      }
+
+    }, 40);
+
+  }, 2000);
 }
 
 // 🎮 toetsen
@@ -72,33 +97,30 @@ window.addEventListener("keydown", function(e){
     enteringScore = true;
 
     document.getElementById("timer").innerText = "STOP";
-    document.getElementById("result").innerText = "Voer bedrag in...";
+    document.getElementById("result").innerText = "...";
     return;
   }
 
-  // ⌨️ score ingeven
+  // ⌨️ score ingeven (onzichtbaar!)
   if(enteringScore){
 
     if(e.key >= "0" && e.key <= "9"){
       inputScore += e.key;
-      document.getElementById("result").innerText = inputScore;
     }
 
     if(e.key === "Backspace"){
       inputScore = inputScore.slice(0, -1);
-      document.getElementById("result").innerText = inputScore;
     }
 
     if(e.key === "Enter"){
       enteringScore = false;
-      document.getElementById("result").innerText = "";
-      animateScore(parseInt(inputScore || "0"));
+      revealScore(parseInt(inputScore || "0"));
     }
 
     return;
   }
 
-  // 🎭 geheime controls
+  // 😈 geheime controls
   if(e.key === "a") time += 60;
   if(e.key === "z") time += 300;
   if(e.key === "f") time -= 10;
