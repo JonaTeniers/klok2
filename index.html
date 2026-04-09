@@ -1,9 +1,26 @@
 <!DOCTYPE html>
 <html>
-<body style="background:black;color:#00ff88;text-align:center;margin-top:10%;font-family:monospace;overflow:hidden;">
+<body style="margin:0;background:black;color:#00ff88;font-family:monospace;overflow:hidden;">
 
-<div id="timer" style="font-size:140px;">10:00</div>
-<div id="result" style="font-size:80px;margin-top:40px;"></div>
+<div id="timer" style="
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+font-size:20vw;
+">
+10:00
+</div>
+
+<div id="result" style="
+position:absolute;
+top:60%;
+width:100%;
+text-align:center;
+font-size:6vw;
+"></div>
+
+<div id="candyContainer"></div>
 
 <audio id="alarm">
   <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3">
@@ -35,9 +52,7 @@ function update() {
   document.getElementById("timer").innerText =
     m + ":" + s.toString().padStart(2,'0');
 
-  // 🔴 laatste 10 sec
   if(time <= 10 && time > 0){
-
     document.body.style.background =
       (time % 2 === 0) ? "#220000" : "black";
 
@@ -45,12 +60,8 @@ function update() {
       document.getElementById("tension").play();
       tensionPlayed = true;
     }
-
-  } else {
-    document.body.style.background = "black";
   }
 
-  // 🔊 alarm op 0
   if(time === 0 && !alarmPlayed){
     document.getElementById("alarm").play();
     alarmPlayed = true;
@@ -64,7 +75,31 @@ setInterval(() => {
   }
 },1000);
 
-// 🎬 dramatische reveal
+// 🍬 snoep regen
+function dropCandy(amount){
+
+  let container = document.getElementById("candyContainer");
+  container.innerHTML = "";
+
+  let count = Math.floor(amount / 5); // meer snoep = meer emojis
+
+  for(let i=0; i<count; i++){
+
+    let candy = document.createElement("div");
+    candy.innerText = "🍬";
+
+    candy.style.position = "absolute";
+    candy.style.left = Math.random()*100 + "%";
+    candy.style.top = "-50px";
+    candy.style.fontSize = (Math.random()*2+2) + "vw";
+
+    candy.style.animation = "fall 3s linear forwards";
+
+    container.appendChild(candy);
+  }
+}
+
+// 🎬 reveal
 function revealScore(target){
 
   document.getElementById("timer").innerText = "";
@@ -78,6 +113,8 @@ function revealScore(target){
       document.getElementById("result").innerText =
         displayScore + " snoepjes 🍬";
 
+      dropCandy(displayScore);
+
       if(displayScore >= target){
         clearInterval(interval);
       }
@@ -87,10 +124,9 @@ function revealScore(target){
   }, 2000);
 }
 
-// 🎮 toetsen
+// toetsen
 window.addEventListener("keydown", function(e){
 
-  // 🛑 STOP spel
   if(e.key === "Enter" && !gameEnded){
     running = false;
     gameEnded = true;
@@ -101,7 +137,6 @@ window.addEventListener("keydown", function(e){
     return;
   }
 
-  // ⌨️ score ingeven (onzichtbaar!)
   if(enteringScore){
 
     if(e.key >= "0" && e.key <= "9"){
@@ -120,7 +155,6 @@ window.addEventListener("keydown", function(e){
     return;
   }
 
-  // 😈 geheime controls
   if(e.key === "a") time += 60;
   if(e.key === "z") time += 300;
   if(e.key === "f") time -= 10;
@@ -133,6 +167,15 @@ window.addEventListener("keydown", function(e){
 
 update();
 </script>
+
+<style>
+@keyframes fall {
+  to {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+</style>
 
 </body>
 </html>
